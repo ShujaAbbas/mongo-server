@@ -1,0 +1,61 @@
+<html>
+
+	<head>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+		<script type="text/javascript">
+			
+				function loginRequest(e) {
+					var formData = JSON.stringify($("#loginForm").serializeArray());
+					var myData = $.ajax({
+						type: "POST",
+						url: "http://localhost:5000/todo/api/v1.0/tasks/greet",
+						data: formData,
+						async: false,
+						success: function(data){
+							var result = JSON.parse(data);
+							console.log("Hello world" + result.result);
+							return data;
+						},
+						error: function (jqXHR, exception) {
+					        var msg = '';
+					        if (jqXHR.status === 0) {
+					            msg = 'Not connect.\n Verify Network.';
+					        } else if (jqXHR.status == 404) {
+					            msg = 'Requested page not found. [404]';
+					        } else if (jqXHR.status == 500) {
+					            msg = 'Internal Server Error [500].';
+					        } else if (exception === 'parsererror') {
+					            msg = 'Requested JSON parse failed.';
+					        } else if (exception === 'timeout') {
+					            msg = 'Time out error.';
+					        } else if (exception === 'abort') {
+					            msg = 'Ajax request aborted.';
+					        } else {
+					            msg = 'Uncaught Error.\n' + jqXHR.responseText;
+					        }
+					        $('#post').html(msg);
+					    },
+						dataType: "json",
+						contentType : "application/json"
+					});
+					// console.log("My world" + myData);
+				}
+			
+				// http://localhost:5000/todo/api/v1.0/tasks/greet
+		</script>
+
+	</head>
+	<body>
+
+		<form id="loginForm" onsubmit="loginRequest()">
+			Email: <input type="text" name="email" placeholder="Email">
+			Password: <input type="password" name="password" placeholder="Password">
+			<input type="submit" value="Login">
+		</form>
+
+		<p id="post"></p>
+
+	</body>
+
+</html>
