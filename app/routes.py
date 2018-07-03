@@ -45,7 +45,7 @@ def get_tasks():
 	tasks = [task for task in mongo.db.tasks.find({"uname": username}, 
 	{"_id":0, "uname": 0})]
 	#return jsonify({"tasks": tasks})
-	return render_template("hello.html")
+	return render_template("hello.html", tasks=tasks)
 
 @app.route('/todo/api/v1.0/tasks/<int:task_id>', methods=['GET'])
 def get_tasks_id(task_id):

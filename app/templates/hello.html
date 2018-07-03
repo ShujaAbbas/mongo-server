@@ -32,7 +32,20 @@
 			<div class="row">
 				<div class="col-md-12">
 					<button class="btn btn-danger btn-md" onclick="logout()">Logout</button><hr>
-					<h1 class="form-control" id="msg">Hello World</h1>			
+
+					<div style="border: 2px solid grey; border-radius: 2% 2% 0% 0%; padding: 5px;">
+						
+						<h1 class="form-group" id="msg">Hello World</h1><hr>
+						<h4 class="form-group">Here are your tasks:</h4>
+
+						{% for task in tasks %}
+						<div class="form-group"> Task: {{ task.title }} </div>
+						<div class="form-group"> Description: {{ task.description }} </div>
+						{% endfor %}
+
+					</div>
+				
+					
 				</div>
 			</div>
 		</div>
