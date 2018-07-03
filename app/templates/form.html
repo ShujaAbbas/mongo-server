@@ -8,15 +8,25 @@
 				function loginRequest(e) {
 					var formData = JSON.stringify($("#loginForm").serializeArray());
 					$.ajax({
+
 						type: "POST",
-						url: "http://localhost:5000/todo/api/v1.0/tasks/greet",
+						url: "/todo/api/v1.0/tasks/greet",
 						data: formData,
-						async: false,
 						success: function(data){
 							var result = JSON.stringify(data);
 							var json = JSON.parse(result);
 
 							console.log("Hello world" + json.result);
+
+							if (json.result === "True"){
+								console.log("Trueeee");
+								location.href = "http://google.com"
+								return false;
+							}else{
+								location.href = "http://hotmail.com";
+								console.log("Falseeee");
+								return false;
+							}
 						},
 						error: function (jqXHR, exception) {
 					        var msg = '';
@@ -47,12 +57,12 @@
 	<body>
 
 		<form id="loginForm" onsubmit="loginRequest()">
-			Email: <input type="text" name="email" placeholder="Email">
+			Email: <input type="text" name="email" placeholder="Email"><br>
 			Password: <input type="password" name="password" placeholder="Password">
 			<input type="submit" value="Login">
 		</form>
 
-		<p id="post"></p>
+		<p id="post">Default value</p>
 
 	</body>
 

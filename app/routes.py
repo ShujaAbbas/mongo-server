@@ -92,15 +92,15 @@ def greet():
 
 
 		if response[0].get("password", "") == password:
-			webbrowser.open("http://google.com")
+			return jsonify({"result": "True"}), 200
 		else:
-			webbrowser.open("http://hotmail.com")
+			return jsonify({"result": "False"}), 200
 
-		return jsonify({'result': "True"}), 200
+		return jsonify({"result": "False"}), 200
 
 	except Exception as e:
 		print str(e)
-		return jsonify({'result': "False"}), 400
+		return jsonify({"result": "False"}), 200
 	
 
 if __name__ == '__main__':
