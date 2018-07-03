@@ -2,17 +2,21 @@
 
 	<head>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
 
 		<script type="text/javascript">
 			
 				function loginRequest(e) {
 					var formData = JSON.stringify($("#loginForm").serializeArray());
+					console.log("here");
 					$.ajax({
 
 						type: "POST",
 						url: "/todo/api/v1.0/tasks/greet",
 						data: formData,
+						async: true,
 						success: function(data){
+							console.log("here2");
 							var result = JSON.stringify(data);
 							var json = JSON.parse(result);
 
@@ -20,10 +24,14 @@
 
 							if (json.result === "True"){
 								console.log("Trueeee");
-								location.href = "http://google.com"
+
+								localStorage.setItem("name", JSON.parse(formData)[0].value);
+								console.log("Name is : " + localStorage.getItem("name"));
+
+								location.href = "/todo/api/v1.0/tasks?username="+localStorage.getItem("name");
+								
 								return false;
 							}else{
-								location.href = "http://hotmail.com";
 								console.log("Falseeee");
 								return false;
 							}
@@ -56,8 +64,16 @@
 	</head>
 	<body>
 
+		<script>
+			if (Modernizr.localstorage) {
+				console.log("Browser Supported");
+			} else {
+			  	console.log("Browser Not Supported");
+			}
+		</script>
+
 		<form id="loginForm" onsubmit="loginRequest()">
-			Email: <input type="text" name="email" placeholder="Email"><br>
+			Email: <input id="name" type="text" name="name" placeholder="Email"><br>
 			Password: <input type="password" name="password" placeholder="Password">
 			<input type="submit" value="Login">
 		</form>

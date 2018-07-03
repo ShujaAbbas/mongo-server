@@ -31,10 +31,19 @@ def bad_request(error):
 def index():
 	return render_template("form.html")
 
-@app.route('/todo/api/v1.0/tasks', methods=['GET'])
+@app.route('/todo/api/v1.0/all_tasks', methods=['GET'])
 @auth.login_required
+def get_all_tasks():
+        tasks = [task for task in mongo.db.tasks.find({}, 
+        {"_id":0, "uname": 0})]
+        return jsonify({"tasks": tasks})
+
+@app.route('/todo/api/v1.0/tasks', methods=['GET', 'POST'])
 def get_tasks():
-	tasks = [task for task in mongo.db.tasks.find({}, {"_id":0})]
+	username = request.args.get("username")
+	print ("\n\n Request: {} \n\n".format(username))
+	tasks = [task for task in mongo.db.tasks.find({"uname": username}, 
+	{"_id":0, "uname": 0})]
 	return jsonify({"tasks": tasks})
 
 @app.route('/todo/api/v1.0/tasks/<int:task_id>', methods=['GET'])
@@ -79,7 +88,7 @@ def delete_task(task_id):
 @app.route("/todo/api/v1.0/tasks/greet", methods=["POST", "GET", "OPTIONS"])
 def greet():
 	
-	#print "Hello world of {}".format(request.json)
+	print "\n\nHello world of {}\n\n".format(request)
 	
 	try:
 		username = request.json[0].get("value", "")
@@ -102,6 +111,10 @@ def greet():
 		print str(e)
 		return jsonify({"result": "False"}), 200
 	
+
+@app.route("/test", methods=["GET"])
+def test():
+	return render_template("hello.html")
 
 if __name__ == '__main__':
 	app.run(debug=False)
