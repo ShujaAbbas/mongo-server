@@ -1,10 +1,43 @@
 <html>
 
-	<body>
+	<head>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	
 		<script>
-			console.log("Name from hello.html: "
-			 + localStorage.getItem("name"));
+			$(function(){
+				var username = localStorage.getItem("name");
+				console.log(username);
+
+				if (username !== null){
+					$("#msg").html("Hello, " + username);
+				}
+				if (localStorage.getItem("remember") === "false"){
+					localStorage.removeItem("name");
+				}
+			});
+
+			function logout(){
+				localStorage.removeItem("name");
+				location.href = "/";
+			}
+			
 		</script>
+
+	</head>
+
+	<body>
+		<div class="container" style="padding: 25px;">
+			<div class="row">
+				<div class="col-md-12">
+					<button class="btn btn-danger btn-md" onclick="logout()">Logout</button><hr>
+					<h1 class="form-control" id="msg">Hello World</h1>			
+				</div>
+			</div>
+		</div>
+		
+
 	</body>
 
 </html>

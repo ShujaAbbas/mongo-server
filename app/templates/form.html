@@ -1,8 +1,10 @@
 <html>
 
 	<head>
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 
 		<script type="text/javascript">
 			
@@ -14,7 +16,7 @@
 						type: "POST",
 						url: "/todo/api/v1.0/tasks/greet",
 						data: formData,
-						async: true,
+						async: false,
 						success: function(data){
 							console.log("here2");
 							var result = JSON.stringify(data);
@@ -26,9 +28,22 @@
 								console.log("Trueeee");
 
 								localStorage.setItem("name", JSON.parse(formData)[0].value);
-								console.log("Name is : " + localStorage.getItem("name"));
+								var isChecked;
+								if (JSON.parse(formData)[2] !== void(0)){
+									console.log("Just checking: " + JSON.parse(formData)[2]);
+									isChecked = "true";
+								}else{
+									isChecked = "false";
+								}
 
-								location.href = "/todo/api/v1.0/tasks?username="+localStorage.getItem("name");
+								localStorage.setItem("remember", isChecked);
+
+								console.log("Name is : " + localStorage.getItem("name"));
+								console.log("Remember Me: " + localStorage.getItem("remember"));
+
+								var pageURL = "/todo/api/v1.0/tasks?username="+localStorage.getItem("name");
+								console.log("Link: " + pageURL);
+								location.href = pageURL;
 								
 								return false;
 							}else{
@@ -70,15 +85,47 @@
 			} else {
 			  	console.log("Browser Not Supported");
 			}
+			var username = localStorage.getItem("name");
+			console.log("Direct name: " + username);
+			if (username !== null){
+				var pageURL = "/todo/api/v1.0/tasks?username="+localStorage.getItem("name");
+				console.log("Direct Link: " + pageURL);
+				location.href = pageURL;
+			}
 		</script>
 
-		<form id="loginForm" onsubmit="loginRequest()">
-			Email: <input id="name" type="text" name="name" placeholder="Email"><br>
-			Password: <input type="password" name="password" placeholder="Password">
-			<input type="submit" value="Login">
-		</form>
+		<div class="container" style="padding: 25px;">
 
-		<p id="post">Default value</p>
+			<div class="row">
+				<div class="col-md-6">
+
+					<form id="loginForm" onsubmit="loginRequest()">
+						<div class="form-group">
+							<label for="name">User Name</label>
+							<input class="form-control" id="name" type="text" name="name" placeholder="User name"><br>
+						</div>
+						
+						<div class="form-group">
+							<label for="password">Password</label>
+							<input class="form-control" type="password" id="password" name="password" placeholder="Password">
+						</div>
+
+						<div class="form-group">
+							<label for="remember">Remember me</label>
+							<input type="checkbox" id="remember" name="remember">
+						</div>
+
+						<input class="btn btn-primary btn-md" type="submit" value="Login">	
+						
+					</form>	
+				
+				</div>	
+			</div>
+
+			
+		</div>
+
+		
 
 	</body>
 
