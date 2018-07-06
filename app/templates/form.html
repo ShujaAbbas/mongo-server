@@ -90,6 +90,7 @@
 			if (username !== null){
 				var pageURL = "/todo/api/v1.0/tasks?username="+localStorage.getItem("name");
 				console.log("Direct Link: " + pageURL);
+				window.open(pageURL);
 				location.href = pageURL;
 			}
 		</script>

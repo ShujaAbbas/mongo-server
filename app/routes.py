@@ -1,13 +1,17 @@
-from flask import jsonify, abort, make_response, request, render_template
+import webbrowser
+import pyotp
+import qrcode
+import qrcode.image.svg
+from StringIO import StringIO
+from flask import jsonify, abort, make_response, request, render_template, send_file
 from flask_pymongo import PyMongo
 from flask_httpauth import HTTPBasicAuth
 from config import Config
 from app import app
-import webbrowser
 
 app.config.from_object(Config)
 mongo = PyMongo(app, config_prefix = 'MONGO')
-auth = HTTPBasicAuth();
+auth = HTTPBasicAuth()
 
 @auth.get_password
 def get_password(username):
@@ -27,6 +31,65 @@ def not_found(error):
 def bad_request(error):
 	return make_response(jsonify({"error": "Bad request"}), 400)
 
+@app.route("/todo/api/v1.0/register")
+def register():
+	return render_template("register.html")
+
+@app.route("/todo/api/v1.0/validate_registration", methods=['GET', 'POST'])
+def validate_registration():
+	username = request.json[0].get("value")
+	password = request.json[1].get("value")
+	response = mongo.db.users.find({"name": username})
+	# print("\n\n{}\n\n".format(response[0]))
+
+	try:
+		response[0].get("name")
+		return jsonify({"result": "User name already exists"})
+	except:
+		# mongo.db.users.insert({"name": username, "password": password})
+		return jsonify({"result": "True"})
+
+@app.route("/todo/api/v1.0/TFA", methods=['GET', 'POST'])
+def authentication():
+	"""
+	Module to test the functionality of the python one time password library
+	"""
+
+	USER_NAME = request.args.get("username") 
+	ISSUER_NAME = "Elastica Inc"
+
+	# Initializing time based OTP object
+	TOTP = pyotp.TOTP("REGSTRATELASTICA")
+
+	# Generating the code at current time
+	CODE = TOTP.now()
+	factory = qrcode.image.svg.SvgImage
+
+	print CODE
+	data = pyotp.totp.TOTP('REGSTRATELASTICA').provisioning_uri(USER_NAME, issuer_name=ISSUER_NAME)
+	IMG = qrcode.make(data)
+	# IMG.show()
+
+	img_io = StringIO()
+	IMG.save(img_io, 'JPEG', quality=70)
+	img_io.seek(0)
+	final_image = send_file(img_io, mimetype='image/jpeg')
+
+
+	image = "<img src='"+str(final_image)+"'>"
+
+	# USER_CODE = input("Please input the OTP to login: ")
+
+	# if int(USER_CODE) == int(TOTP.now()):
+	# 	print "Success"
+	# else:
+	# 	print "Failure"
+
+
+
+	return render_template("authentication.html", img=image)
+
+
 @app.route("/")
 def index():
 	return render_template("form.html")
@@ -34,9 +97,7 @@ def index():
 @app.route('/todo/api/v1.0/all_tasks', methods=['GET'])
 @auth.login_required
 def get_all_tasks():
-        tasks = [task for task in mongo.db.tasks.find({}, 
-        {"_id":0, "uname": 0})]
-        return jsonify({"tasks": tasks})
+    tasks = [task for task in mongo.db.tasks.find({}, {"_id":0, "uname": 0})]
 
 @app.route('/todo/api/v1.0/tasks', methods=['GET', 'POST'])
 def get_tasks():
