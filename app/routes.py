@@ -2,7 +2,9 @@ import webbrowser
 import pyotp
 import qrcode
 import qrcode.image.svg
-from StringIO import StringIO
+import StringIO
+import hashlib
+import base64
 from flask import jsonify, abort, make_response, request, render_template, send_file
 from flask_pymongo import PyMongo
 from flask_httpauth import HTTPBasicAuth
@@ -46,48 +48,42 @@ def validate_registration():
 		response[0].get("name")
 		return jsonify({"result": "User name already exists"})
 	except:
-		# mongo.db.users.insert({"name": username, "password": password})
+		mongo.db.users.insert({"name": username, "password": password})
 		return jsonify({"result": "True"})
 
 @app.route("/todo/api/v1.0/TFA", methods=['GET', 'POST'])
 def authentication():
 	"""
-	Module to test the functionality of the python one time password library
+	Module to implement the functionality of the python one time password library
 	"""
 
 	USER_NAME = request.args.get("username") 
 	ISSUER_NAME = "Elastica Inc"
 
+	secret_key = base64.b32encode(hashlib.md5(USER_NAME).digest())[:16]
+	
 	# Initializing time based OTP object
-	TOTP = pyotp.TOTP("REGSTRATELASTICA")
+	TOTP = pyotp.TOTP(secret_key)
 
 	# Generating the code at current time
 	CODE = TOTP.now()
-	factory = qrcode.image.svg.SvgImage
 
 	print CODE
-	data = pyotp.totp.TOTP('REGSTRATELASTICA').provisioning_uri(USER_NAME, issuer_name=ISSUER_NAME)
+	data = TOTP.provisioning_uri(USER_NAME, issuer_name=ISSUER_NAME)
 	IMG = qrcode.make(data)
+
+	link = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data="+data
+
 	# IMG.show()
+	# IMG.save('JPEG', quality=70)
+	# IMG.save('qr.jpg','JPEG')
 
-	img_io = StringIO()
-	IMG.save(img_io, 'JPEG', quality=70)
-	img_io.seek(0)
-	final_image = send_file(img_io, mimetype='image/jpeg')
+	# img_io = StringIO()
+	# IMG.save(img_io, 'JPEG', quality=70)
+	# img_io.seek(0)
+	# final_image = send_file(img_io, mimetype='image/jpeg')
 
-
-	image = "<img src='"+str(final_image)+"'>"
-
-	# USER_CODE = input("Please input the OTP to login: ")
-
-	# if int(USER_CODE) == int(TOTP.now()):
-	# 	print "Success"
-	# else:
-	# 	print "Failure"
-
-
-
-	return render_template("authentication.html", img=image)
+	return render_template("authentication.html", qr_source=link)
 
 
 @app.route("/")
@@ -155,28 +151,42 @@ def greet():
 	try:
 		username = request.json[0].get("value", "")
 		password = request.json[1].get("value", "")
+		otp = request.json[2].get("value", "")
+
+		secret_key = base64.b32encode(hashlib.md5(username).digest())[:16]
+		TOTP = pyotp.TOTP(secret_key)
+
+		print "\n\nTOTP.now(): {} and TOTP.user(): {}\n\n".format(TOTP.now(), otp)
 
 		response = mongo.db.users.find({"name": username}, 
                 	{"password": 1, "_id": 0})
-		if response is None:
-			abort(400)
 
-
+		try:
+			response[0]
+		except:
+			return jsonify({"result": "User does not exist"})
+			
 		if response[0].get("password", "") == password:
+			if int(otp) != int(TOTP.now()):
+				return jsonify({"result": "One Time Password not Correct"})
+			
 			return jsonify({"result": "True"}), 200
 		else:
-			return jsonify({"result": "False"}), 200
+			return jsonify({"result": "Wrong password"}), 200
 
-		return jsonify({"result": "False"}), 200
+		return jsonify({"result": "User does not exist"}), 200
 
 	except Exception as e:
 		print str(e)
-		return jsonify({"result": "False"}), 200
+		return jsonify({"result": "Please fill the form correctly"}), 200
 	
 
-@app.route("/test", methods=["GET"])
+@app.route("/test")
 def test():
-	return render_template("hello.html")
+	strIO = StringIO.StringIO()
+	strIO.write('Hello from Dan Jacob and Stephane Wirtel !')
+	strIO.seek(0)
+	return send_file(strIO,attachment_filename="qr.jpg",as_attachment=True)
 
 if __name__ == '__main__':
 	app.run(debug=False)

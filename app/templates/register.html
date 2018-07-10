@@ -5,11 +5,12 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/static/css/main.css">
 	
 	<script>
 		function registerRequest(){
 			var formData = JSON.stringify($("#registerForm").serializeArray());
-
+			var jsonResult;
 			$.ajax({
 				type: "POST",
 				url: "/todo/api/v1.0/validate_registration",
@@ -22,16 +23,15 @@
 					if (json.result === "True"){
 						console.log(json.result+"eeeeee");
 						localStorage.setItem("new_user_name", JSON.parse(formData)[0].value);
-						console.log("bnade ka naam: " + localStorage.getItem("new_user_name"));
+						console.log("bande ka naam: " + localStorage.getItem("new_user_name"));
 						var pageURL = "/todo/api/v1.0/TFA?username="+localStorage.getItem("new_user_name");
 
 						window.open(pageURL);
-						location.href = pageURL;
+						// location.href = pageURL;
 
 						return false;
 					}else{
-						$("#alertDiv").html(json.result);
-						alert(json.result)
+						jsonResult = json.result;
 						return false;
 					}
 				},
@@ -39,8 +39,7 @@
 				contentType : "application/json"
 			});
 
-			// localStorage.setItem("new_user_pass", $("password").value());
-
+			$("#alertDiv").html(jsonResult).css("visibility", "visible");
 			
 		}
 	</script>
@@ -49,10 +48,11 @@
 <body>
 
 	<div class="container" style="padding: 25px;">
-		<div class="row">
-			<div class="col-md-6">
-				<h1>User Registration Form</h1>
-				<form id="registerForm" onsubmit="registerRequest()">
+		<div class="row main-form">
+			<div class="col-md-12">
+				<h1 style="text-align: center;">User Registration</h1><br>
+				<div style="border: 1px solid white;"></div><br>
+				<form id="registerForm" onsubmit="registerRequest(); return false;">
 					<div class="form-group">
 						<label for="name">User Name</label>
 						<input class="form-control" id="name" type="text" name="name" placeholder="User name"><br>
@@ -64,9 +64,8 @@
 					</div>
 
 					<div class="form-group">
-						<input class="btn btn-success btn-md form-control" type="submit" value="Register">		
+						<input class="btn btn-primary btn-md" type="submit" value="Register">		
 					</div>
-					
 						
 				</form>	
 				
@@ -74,7 +73,9 @@
 		</div>
 
 		<div class="row">
-			<div class="col-md-6" id="alertDiv"></div>
+			<div class="col-md-6">
+				<div class="alert alert-danger" id="alertDiv" style="visibility: hidden;"></div>	
+			</div>
 		</div>
 	</div>
 

@@ -1,0 +1,14 @@
+@font-face {
+    font-family: princeps;
+    src: url("OptimusPrincepsSemiBold.ttf");
+}
+
+body{
+	font-family: princeps;
+	background-color: #f2f4f7;
+}
+
+.main-form {
+	padding-left: 250px;
+	padding-right: 250px;
+}
