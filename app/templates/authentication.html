@@ -8,13 +8,45 @@
 	<link rel="stylesheet" href="/static/css/main.css">
 
 	<script type="text/javascript">
+
+		$("#username").val(localStorage.getItem("new_user_name"));
+
 		function next(){
-			var name = localStorage.getItem("new_user_name");
-			var pageURL = "/todo/api/v1.0/tasks?username="+name;
-			localStorage.removeItem("new_user_name");
-			localStorage.setItem("name", name)
-			console.log("Link: " + pageURL);
-			location.href = pageURL;
+			
+			var formData = JSON.stringify($("#authenticationForm").serializeArray());
+			var jsonResult;
+
+			console.log("Username: " + $("#username").val());
+
+			$.ajax({
+				type: "POST",
+				url: "/todo/api/v1.0/verifycode",
+				data: formData,
+				async: false,
+				success: function(data){
+					var result = JSON.stringify(data);
+					var json = JSON.parse(result);
+
+					if (json.result === "True"){
+						console.log(json.result+"eeeeee");
+						var name = localStorage.getItem("new_user_name");
+						var pageURL = "/todo/api/v1.0/tasks?username="+name;
+						localStorage.removeItem("new_user_name");
+						localStorage.setItem("name", name)
+						console.log("Link: " + pageURL);
+						location.href = pageURL;
+
+						return false;
+					}else{
+						jsonResult = json.result;
+						return false;
+					}
+				},
+				dataType: "json",
+				contentType : "application/json"
+			});
+			$("#alertDiv").html(jsonResult).css("visibility", "visible");
+			
 		}
 	</script>
 </head>
@@ -27,7 +59,24 @@
 
 				<img src="{{qr_source}}"><br><br>
 
-				<button class="btn btn-primary" onclick="next()">Next</button>			
+				<form id="authenticationForm" onsubmit="next(); return false;">
+					<div class="form-group">
+						<input class="form-control" type="text" name="key" placeholder="6 digit code">
+					</div>
+					
+					<div class="form-group">
+						<input class="form-control" type="text" style="visibility: visible;" name="username" id="username">
+					</div>
+
+					<div class="form-group">
+						<input class="btn btn-primary" type="submit" name="submit" value="Next">	
+					</div>
+
+					<div class="form-group">
+						<div class="alert alert-danger form-control" id="alertDiv" style="visibility: hidden;"></div>
+					</div>
+				</form>
+							
 			</div>
 		</div>
 	</div>

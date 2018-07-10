@@ -1,8 +1,5 @@
-import webbrowser
 import pyotp
 import qrcode
-import qrcode.image.svg
-import StringIO
 import hashlib
 import base64
 from flask import jsonify, abort, make_response, request, render_template, send_file
@@ -84,6 +81,29 @@ def authentication():
 	# final_image = send_file(img_io, mimetype='image/jpeg')
 
 	return render_template("authentication.html", qr_source=link)
+
+@app.route("/todo/api/v1.0/verifycode", methods=['GET', 'POST'])
+def authenticate_two_factor():
+	try:
+		print request.json
+		code = request.json[0].get("value", "")
+		print code
+		username = request.json[2].get("value", "")
+		print username
+
+		secret_key = base64.b32encode(hashlib.md5(username).digest())[:16]
+		TOTP = pyotp.TOTP(secret_key)
+		CODE = TOTP.now()
+
+		print "\n\nUsername: {} \nCode: {}\nOTP:{}\n\n".format(username, code, CODE)
+
+		if int(CODE) == int(code):
+			return jsonify({"result": "True"})
+		else:
+			return jsonify({"result": "Incorrect code"})
+
+	except:
+		return jsonify({"result": "Incorrect code"})
 
 
 @app.route("/")
